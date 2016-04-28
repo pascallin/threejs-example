@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!-- The previous line tells the browser, that the page uses the HTML5 standard. -->
+
+<html>
+<head>
+    <title>my first polygon</title>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <!-- The following meta line optimizes the site for mobile devices. It sets the viewport size
+    to the screen size, so it will be displayed maximized, but unscaled. -->
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    <style type="text/css">
+        body {
+            /* Set the background color of the HTML page to black */
+            background-color: #000000;
+            /* Hide over sized content. This prevents the scroll bars. */
+            overflow: hidden;
+        }
+    </style>
+    <!-- Include Three.js libraries -->
+    <script src="js/three.min.js"></script>
+    <script src="js/Detector.js"></script>
+</head>
+<body>
+
+<!-- This is the DIV element which will contain the WebGL canvas. To be identifiable late ron,  the id 'WebGLCanvas' is applied to it. -->
+<div id="WebGLCanvas"></div>
+
+<!-- This JavaScript block encloses the Three.js commands -->
+<script>
+    var scene,camera,renderer,
+            starTexture,boxMesh;
+    var num = 32;
+    var star = new Array(num);
+    var spin = 0;
+
+    initScene();
+    animateScene();
+
+    function initScene(){
+        // Check whether the browser supports WebGL. If so, instantiate the hardware accelerated
+        webGLAvailable = false;
+        if(Detector.webgl){
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            webGLAvailable = true;
+        }else{
+            renderer = new THREE.CanvasRenderer();
+        }
+
+        //背景颜色和透明度
+        renderer.setClearColor(0x000000,1);
+
+        var width = window.innerWidth - 10,
+                height = window.innerHeight - 20;
+        renderer.setSize(width,height);
+
+        //添加renderer的DOM
+        document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(45,width/height, 1, 100);
+        camera.position.set(0,0,15);
+        camera.lookAt(scene.position);
+        scene.add(camera);
+
+        starTexture = new THREE.ImageUtils.loadTexture("statics/images/chrome.png");
+        for(i = 0;i  < num; i++){
+            var squareGeometry = new THREE.Geometry();
+            squareGeometry.vertices.push(new THREE.Vector3(-1,-1,0));
+            squareGeometry.vertices.push(new THREE.Vector3(1,-1,0));
+            squareGeometry.vertices.push(new THREE.Vector3(1,1,0));
+            squareGeometry.vertices.push(new THREE.Vector3(-1,1,0));
+            squareGeometry.faces.push(new THREE.Face4(0,1,2,3));
+            squareGeometry.faceVertexUvs[0].push([
+                    new THREE.Vector2(0.0, 0.0),
+                    new THREE.Vector2(1.0, 0.0),
+                    new THREE.Vector2(1.0, 1.0),
+                    new THREE.Vector2(0.0, 1.0)
+            ]);
+
+            var squareMaterial = new THREE.MeshBasicMaterial({
+                map:starTexture,
+                transparent:true,
+                combine:THREE.MixOperation,
+                blending: THREE.AdditiveBlending,
+                color:0xFFFFFF
+            });
+
+            var squareMesh = new THREE.Mesh(squareGeometry,squareMaterial);
+            squareMesh.position.set(0.0, 0.0, 0.0);
+            scene.add(squareMesh);
+
+            star[i] = {
+                angle:0.0,
+                dist:(i/num)*5.0,
+                r:Math.random(),
+                g:Math.random(),
+                b:Math.random(),
+                mesh:squareMesh
+            };
+        }
+    }
+
+    //Animate the scene and call rendering.
+    function animateScene(){
+        requestAnimationFrame(animateScene);
+
+        for(i = 0; i < num; i++) {
+            spin += Math.PI * 2 / num;
+
+            if (spin > (Math.PI*2))
+                spin = 0;
+
+            star[i].angle += i / num;
+            star[i].dist -= 0.01;
+            if(star[i].dist < 0.0) {
+                star[i].dist += 5.0;
+                star[i].r = Math.random();
+                star[i].g = Math.random();
+                star[i].b = Math.random();
+            }
+            // we want to translate the star out to the right distance and the rotate it
+            // around the z-axis so we set the mesh's matrix to that translated value
+            // then rotate a second matrix and concatenate it onto the mesh's matrix.
+            star[i].mesh.matrix.setPosition(new THREE.Vector3(star[i].dist,0, 0));
+            var mr = new THREE.Matrix4();
+            mr.makeRotationZ(spin);
+            star[i].mesh.applyMatrix(mr);
+            // then change the color of the mesh
+            star[i].mesh.material.color.setRGB(star[i].r, star[i].g, star[i].b);
+        }
+
+        renderScene();
+    }
+    //Render the scene. Map the 3D world to the 2D screen.
+    function renderScene(){
+        renderer.render(scene,camera);
+    }
+</script>
+</body>
+</html>

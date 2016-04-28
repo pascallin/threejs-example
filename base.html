@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- The previous line tells the browser, that the page uses the HTML5 standard. -->
+
+<html>
+<head>
+    <title>my first polygon</title>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <!-- The following meta line optimizes the site for mobile devices. It sets the viewport size
+    to the screen size, so it will be displayed maximized, but unscaled. -->
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    <style type="text/css">
+        body {
+            /* Set the background color of the HTML page to black */
+            background-color: #000000;
+            /* Hide over sized content. This prevents the scroll bars. */
+            overflow: hidden;
+        }
+    </style>
+    <!-- Include Three.js libraries -->
+    <script src="js/three.min.js"></script>
+    <script src="js/Detector.js"></script>
+</head>
+<body>
+
+<!-- This is the DIV element which will contain the WebGL canvas. To be identifiable late ron,  the id 'WebGLCanvas' is applied to it. -->
+<div id="WebGLCanvas"></div>
+
+<!-- This JavaScript block encloses the Three.js commands -->
+<script>
+    var webGLAvailable;
+    var scene,camera,renderer;
+
+    //其他全局变量
+
+    initScene();
+    animateScene();
+
+    function initScene(){
+        // Check whether the browser supports WebGL. If so, instantiate the hardware accelerated
+        webGLAvailable = false;
+        if(Detector.webgl){
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            webGLAvailable = true;
+        }else{
+            renderer = new THREE.CanvasRenderer();
+        }
+
+        //背景颜色和透明度
+        renderer.setClearColor(0x000000,1);
+
+        var width = window.innerWidth - 10,
+                height = window.innerHeight - 20;
+        renderer.setSize(width,height);
+
+        //添加renderer的DOM
+        document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(45,width/height, 1, 100);
+        camera.position.set(0,0,15);
+        camera.lookAt(scene.position);
+        scene.add(camera);
+
+        //开始编写物体
+    }
+
+    //Animate the scene and call rendering.
+    function animateScene(){
+
+        //改变物体的属性
+
+        requestAnimationFrame(animateScene);
+        renderScene();
+    }
+    //Render the scene. Map the 3D world to the 2D screen.
+    function renderScene(){
+        renderer.render(scene,camera);
+    }
+</script>
+</body>
+</html>
